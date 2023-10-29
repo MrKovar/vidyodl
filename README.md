@@ -1,6 +1,6 @@
 # vidyodl
 
-Self-host your own video downloading API built on top of [pytube](https://github.com/pytube/pytube)! Want to download a video from YouTube? How about just the audio? How about an entire playlist? You came to the right repo! Using celery to create an efficient download queue, you can queue up as many downloads as you want and they will be processed in the order they were received and save them to a directory of your choosing.
+Host your own video downloading API! built on top of [pytube](https://github.com/pytube/pytube)! Want to download a video from YouTube? How about just the audio? How about an entire playlist? You came to the right repo! Using celery to create an efficient download queue, you can queue up as many downloads as you want and they will be processed in the order they were received and save them to a directory of your choosing.
 
 ## Getting Started
 

@@ -21,6 +21,8 @@ app_kwargs = dict(title="vidyodl", description=description, version="0.1.0")
 
 vidyodl_app = FastAPI(**app_kwargs)
 
+oauth_expire_time = 300
+
 
 @vidyodl_app.get("/health")
 async def health_check():
@@ -44,6 +46,7 @@ async def oauth(
             response_data, verification_url, user_code = prompt_for_oauth()
             cache_key = uuid.uuid4().hex
             await redis.set(cache_key, json.dumps(response_data))
+            await redis.expire(cache_key, oauth_expire_time)
             return {
                 "response": {
                     "status": Status.OK,
