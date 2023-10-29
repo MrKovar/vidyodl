@@ -12,3 +12,6 @@ vidyodlenv
 # Downloaded files
 /download
 /download/**
+
+# MacOS files
+.DS_Store
