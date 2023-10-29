@@ -1,0 +1,3 @@
+# Cached files
+.ruff_cache
+**/__pycache__

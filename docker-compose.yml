@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  vidyodl-api:
+    build:
+      context: .
+      args:
+        - DOWNLOAD_PATH=${DOWNLOAD_PATH}
+    image: vidyodl
+    container_name: vidyodl
+    volumes:
+      - ./${DOWNLOAD_PATH}:/vidyodl/${DOWNLOAD_PATH}
+      - ./${DOWNLOAD_PATH}/audio:/vidyodl/${DOWNLOAD_PATH}/audio
+      - ./${DOWNLOAD_PATH}/video:/vidyodl/${DOWNLOAD_PATH}/video
+      - ./${DOWNLOAD_PATH}/completed:/vidyodl/${DOWNLOAD_PATH}/completed
+    working_dir: /vidyodl
+    env_file: .env
+    ports:
+      - "8069:8000"
+    entrypoint:
+      - poetry
+      - run
+      - uvicorn
+      - server.main:vidyodl_app
+      - --host=0.0.0.0
+      - --port=8000
+      # Uncomment this line for quicker development
+      # - --reload
+
+  celery-redis:
+    container_name: vidyodl-redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    command: /bin/sh -c 'redis-server --requirepass ${CELERY_BROKER_PASSWORD}'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping", "-a", "${CELERY_BROKER_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery-worker:
+    build:
+      dockerfile: DockerfileCelery
+    container_name: vidyodl-celery
+    volumes:
+      - .:/vidyodl
+    working_dir: /vidyodl
+    env_file: .env
+    command: poetry run celery -A app.tasks.celery_app worker
+    depends_on:
+      - vidyodl-api
+      - celery-redis

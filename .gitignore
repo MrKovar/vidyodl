@@ -1,0 +1,14 @@
+# Local development
+.env
+.tool-versions
+
+# Local environment
+vidyodlenv
+
+# Cached files
+.ruff_cache
+**/__pycache__
+
+# Downloaded files
+/download
+/download/**
