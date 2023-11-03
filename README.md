@@ -1,6 +1,6 @@
 # vidyodl
 
-Host your own video downloading API! built on top of [pytube](https://github.com/pytube/pytube)! Want to download a video from YouTube? How about just the audio? How about an entire playlist? You came to the right repo! Using celery to create an efficient download queue, you can queue up as many downloads as you want and they will be processed in the order they were received and save them to a directory of your choosing.
+Host your own video downloading API! Built in homage to [pytube](https://github.com/pytube/pytube) but with an emphasis on privacy, utilizing Piped! Want to download a video from your favorite site, Piped? How about just the audio? How about an entire YouTube playlist? You came to the right repo! Using celery to create an efficient download queue, you can queue up as many downloads as you want and they will be processed in the order they were received and save them to a directory of your choosing.
 
 ## Getting Started
 
@@ -13,22 +13,6 @@ The API has a few main endpoints that you can use to download videos:
 * `/download_playlist` - Download an entire playlist
 
 * `/download_audio` - Download the audio from a video
-
-Also, some videos require you to be logged in to download them. To do this, you can use the `/oauth` endpoint to log in to YouTube and then use the returned cookie to download the video.
-
-How this works if you first make a call to the /oauth endpoint via a POST call:
-
-```shell
-http://localhost:8069/oauth
-```
-
-which will then prompt you to use a specific code to login to your YouTube account, and will generate a UUID for you to reference your cookie data. Once you follow the link and allow access, you can then call the same endpoint with the extra query parameter `cache_uuid`:
-
-```shell
-http://localhost:8069/oauth?cache_uuid=YOUR_UUID
-```
-
-which will then save the cookie data and allow you to use it to download videos that require you to be logged in.
 
 Once the application has started, you can access the API at `http://localhost:8069/docs` for more information.
 
@@ -122,4 +106,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Huge thank you to the developers of [pytube](https://github.com/pytube/pytube) without which this project would not be possible.
+* Huge thank you to the developers of [pytube](https://github.com/pytube/pytube) who inspired this project and provided a great starting point for the YouTube download functionality and Playlist parsing abilities.
+* Thank you to the developers of [Piped](https://github.com/TeamPiped/Piped/tree/master) who created something really useful for people who may not want to have their information constantly scraped but still want to be able to use the services that they provide.

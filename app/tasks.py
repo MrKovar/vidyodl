@@ -3,8 +3,8 @@ import celery
 from app import config
 from app.download_utils import (
     combine_audio_video,
-    download_youtube_audio,
-    download_youtube_video,
+    download_audio_from_piped,
+    download_piped_video,
 )
 from app.helper_classes import Status
 
@@ -38,18 +38,22 @@ class SubtaskException(Exception):
     default_retry_delay=settings.celery_retry_delay,
     retries=settings.celery_retry_max,
 )
-def download_youtube_video_task(self, payload: dict):
-    try:
-        audio_path, video_path, title = download_youtube_video(payload["video_id"])
-    except Exception as e:
-        raise self.retry(exc=SubtaskException(str(e)))
+def download_piped_video_task(self, payload: dict):
+    video_id = payload["video_id"]
+    download_result = download_piped_video(video_id)
+    if download_result["status"] == Status.ERROR:
+        raise self.retry(exc=SubtaskException(download_result["error"]))
 
-    result = combine_audio_video(audio_path, video_path, title)
+    audio_path = download_result["audio_path"]
+    video_path = download_result["video_path"]
+    title = download_result["title"]
 
-    if result["status"] == Status.ERROR:
-        raise self.retry(exc=SubtaskException(result["error"]))
+    combine_result = combine_audio_video(audio_path, video_path, title)
 
-    return result
+    if combine_result["status"] == Status.ERROR:
+        raise self.retry(exc=SubtaskException(combine_result["error"]))
+
+    return combine_result
 
 
 @celery_app.task(
@@ -58,9 +62,9 @@ def download_youtube_video_task(self, payload: dict):
     default_retry_delay=settings.celery_retry_delay,
     retries=settings.celery_retry_max,
 )
-async def download_youtube_audio_task(self, payload: dict):
+async def download_piped_audio_task(self, payload: dict):
     try:
-        audio_path, title = download_youtube_audio(payload["video_id"])
+        audio_path, title = download_audio_from_piped(payload["video_id"])
     except Exception as e:
         if self.request.retries == settings.celery_retry_max:
             raise self.retry(exc=SubtaskException(str(e)))

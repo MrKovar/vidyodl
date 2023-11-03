@@ -1,27 +1,19 @@
-import json
-import uuid
-
-from fastapi import Depends, FastAPI, HTTPException
-from redis.asyncio import Redis
+from fastapi import FastAPI, HTTPException
 
 from app import config, download_utils, models
-from app.auth import prompt_for_oauth, save_oauth_token
-from app.connections import get_token_redis
 from app.download_utils import get_youtube_video_list_from_playlist
 from app.helper_classes import Status
-from app.tasks import download_youtube_video_task
+from app.tasks import download_piped_audio_task, download_piped_video_task
 
 description = """
-Self-host your own video downloading API built on top of pytube.
+Host your own video downloading API using Piped!
 """
 
 settings = config.Settings()
 
-app_kwargs = dict(title="vidyodl", description=description, version="0.1.0")
+app_kwargs = dict(title="vidyodl", description=description, version="0.2.0")
 
 vidyodl_app = FastAPI(**app_kwargs)
-
-oauth_expire_time = 300
 
 
 @vidyodl_app.get("/health")
@@ -29,38 +21,10 @@ async def health_check():
     return {"status": Status.OK, "app": "vidyodl", "version": settings.app_version}
 
 
-@vidyodl_app.post("/oauth")
-async def oauth(
-    cache_uuid: str = None, redis: Redis = Depends(get_token_redis)
-):
-    try:
-        if cache_uuid:
-            if cache_uuid is not None:
-                response_data = await redis.get(cache_uuid)
-                response_data = json.loads(response_data)
-                expiry = save_oauth_token(response_data)
-                return {"response": {"status": Status.OK, "info": f"OAuth token saved. Expires at {expiry}"}}
-            else:
-                raise HTTPException(status_code=400, detail="No cache UUID provided.")
-        else:
-            response_data, verification_url, user_code = prompt_for_oauth()
-            cache_key = uuid.uuid4().hex
-            await redis.set(cache_key, json.dumps(response_data))
-            await redis.expire(cache_key, oauth_expire_time)
-            return {
-                "response": {
-                    "status": Status.OK,
-                    "info": f"Please go to {verification_url} and enter the code {user_code} to authenticate, then run the same request with the 'finish' parameter set to True and the 'cache_uuid' parameter set to {cache_key}.",
-                }
-            }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error caught while getting OAuth token: {str(e)}")
-
-
 @vidyodl_app.post("/download", response_model=models.downloadResponseModel)
 async def download_from_video_id(video_id: str, use_celery: bool = True) -> models.downloadResponseModel:
     """
-    Downloads a video from YouTube.
+    Downloads a video from Piped.
 
     It
 
@@ -77,15 +41,16 @@ async def download_from_video_id(video_id: str, use_celery: bool = True) -> mode
     """
     if use_celery:
         try:
-            audio_path, video_path, title = download_utils.download_youtube_video(video_id)
-            download_utils.combine_audio_video(audio_path, video_path, title)
+            celery_download_task = download_piped_video_task.delay({"video_id": video_id})
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error caught while downloading video: {str(e)}")
-        return {"response": {"status": Status.OK, "info": settings.download_path}}
+        return {"response": {"status": Status.OK, "info": celery_download_task.id}}
     else:
         try:
-            audio_path, video_path, title = download_utils.download_youtube_video(video_id)
-            download_utils.combine_audio_video(audio_path, video_path, title)
+            download_result = download_utils.download_youtube_video(video_id)
+            download_utils.combine_audio_video(
+                download_result["audio_path"], download_result["video_path"], download_result["title"]
+            )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error caught while downloading video: {str(e)}")
         return {"response": {"status": Status.OK, "info": settings.download_path}}
@@ -94,7 +59,7 @@ async def download_from_video_id(video_id: str, use_celery: bool = True) -> mode
 @vidyodl_app.post("/download-audio", response_model=models.downloadResponseModel)
 async def download_audio_from_video_id(video_id: str, use_celery: bool = True) -> models.downloadResponseModel:
     """
-    Downloads the audio stream of a video from YouTube.
+    Downloads the audio stream of a video from Piped.
 
     - **video_id**: The ID of the video to download.
     - **use_celery**: Whether to use Celery or not. (default: True)
@@ -110,13 +75,13 @@ async def download_audio_from_video_id(video_id: str, use_celery: bool = True) -
 
     if use_celery:
         try:
-            celery_download_task = download_youtube_video_task.delay({"video_id": video_id})
+            celery_download_task = download_piped_audio_task.delay({"video_id": video_id})
         except Exception as e:
             return {"response": {"status": Status.ERROR, "error": str(e)}}
         return {"response": {"status": Status.OK, "info": celery_download_task.id}}
     else:
         try:
-            audio_path, title = download_utils.download_youtube_audio(video_id, settings.download_path)
+            audio_path, title = download_utils.download_piped_audio(video_id)
         except Exception as e:
             return {"response": {"status": Status.ERROR, "error": str(e)}}
         return {"response": {"status": Status.OK, "info": audio_path}}
@@ -125,7 +90,7 @@ async def download_audio_from_video_id(video_id: str, use_celery: bool = True) -
 @vidyodl_app.post("/download-playlist", response_model=models.downloadResponseModel)
 async def download_from_playlist_id(playlist_id: str, use_celery: bool = True) -> models.downloadResponseModel:
     """
-    Downloads a playlist from YouTube.
+    Downloads a YouTube playlist from Piped.
 
     - **playlist_id**: The ID of the playlist to download.
     - **use_celery**: Whether to use Celery or not. (default: True)
@@ -143,7 +108,7 @@ async def download_from_playlist_id(playlist_id: str, use_celery: bool = True) -
     if use_celery:
         try:
             for youtube_obj in get_youtube_video_list_from_playlist(playlist_id):
-                celery_download_task = download_youtube_video_task.delay({"video_id": youtube_obj.video_id})
+                celery_download_task = download_piped_video_task.delay({"video_id": youtube_obj.video_id})
                 task_list.append(celery_download_task.id)
         except Exception as e:
             return {"response": {"status": Status.ERROR, "error": str(e)}}
@@ -152,7 +117,7 @@ async def download_from_playlist_id(playlist_id: str, use_celery: bool = True) -
 
     else:
         try:
-            download_utils.download_youtube_playlist(playlist_id, settings.download_path)
+            download_utils.download_youtube_playlist(playlist_id)
         except Exception as e:
             return {"response": {"status": Status.ERROR, "error": str(e)}}
 

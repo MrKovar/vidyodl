@@ -5,6 +5,7 @@ ARG DOWNLOAD_PATH
 
 # Install ffmpeg
 RUN apt-get update && apt-get install ffmpeg -y
+RUN pip3 install debugpy
 
 # Copy project files
 RUN mkdir -p /vidyodl

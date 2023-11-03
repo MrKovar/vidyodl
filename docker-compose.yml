@@ -41,7 +41,7 @@ services:
 
   celery-worker:
     build:
-      dockerfile: DockerfileCelery
+      dockerfile: Dockerfile.celery
     container_name: vidyodl-celery
     volumes:
       - .:/vidyodl

@@ -1,10 +1,15 @@
+from typing import Tuple
+
 import ffmpeg
-from pytube import Playlist, YouTube
+from pytube import Playlist
 
 from app import config
 from app.helper_classes import Status
+from app.Piped import Piped
 
 settings = config.Settings()
+
+path = settings.download_path
 
 
 def get_youtube_video_list_from_playlist(playlist_id: str) -> list:
@@ -13,58 +18,29 @@ def get_youtube_video_list_from_playlist(playlist_id: str) -> list:
     return playlist.videos
 
 
-def download_youtube_video(video_id: str, path: str = None) -> tuple:
-    youtube_obj = YouTube(f"https://www.youtube.com/watch?v={video_id}", allow_oauth_cache=True)
-
-    if path is None:
-        path = settings.download_path
-
-    audio_path = (
-        youtube_obj.streams.filter(only_audio=True)
-        .order_by("abr")
-        .desc()
-        .first()
-        .download(output_path=f"{path}/audio/", filename_prefix="audio_")
-    )
-    video_path = (
-        youtube_obj.streams.filter(progressive=False, file_extension="mp4")
-        .order_by("resolution")
-        .desc()
-        .first()
-        .download(output_path=f"{path}/video/", filename_prefix="video_")
-    )
-
-    return audio_path, video_path, youtube_obj.title
+def download_piped_video(video_id: str) -> dict:
+    try:
+        audio_path, video_path, title = download_av_from_piped(video_id)
+        return {"status": Status.OK, "audio_path": audio_path, "video_path": video_path, "title": title}
+    except Exception as e:
+        print(f"Exception happned while retrying with Piped: {e}")
+        return {"status": Status.ERROR, "error": str(e)}
 
 
-def download_youtube_audio(video_id, path: str = None):
-    youtube_obj = YouTube(f"https://www.youtube.com/watch?v={video_id}", allow_oauth_cache=True)
-
-    audio_path = (
-        youtube_obj.streams.filter(only_audio=True)
-        .order_by("abr")
-        .desc()
-        .first()
-        .download(output_path=f"{path}/completed/", filename_prefix="audio_")
-    )
-
-    return audio_path, youtube_obj.title
-
-
-def download_youtube_playlist(playlist_id, path):
+def download_youtube_playlist(playlist_id, path) -> None:
     playlist = Playlist(f"https://www.youtube.com/playlist?list={playlist_id}")
 
     for video in playlist.videos:
-        audio_path, video_path, video_title = download_youtube_video(video.video_id, path)
+        download_result = download_piped_video(video.video_id, path)
+        audio_path, video_path, video_title = (
+            download_result["audio_path"],
+            download_result["video_path"],
+            download_result["title"],
+        )
         combine_audio_video(audio_path, video_path, video_title, path)
 
 
-def combine_audio_video(
-    audio_path, video_path, title, path=None, format_out="mp4", vcodec_out="copy", acodec_out="copy"
-):
-    if path is None:
-        path = settings.download_path
-
+def combine_audio_video(audio_path, video_path, title, format_out="mp4", vcodec_out="copy", acodec_out="copy") -> dict:
     try:
         audio_input = ffmpeg.input(audio_path)
         video_input = ffmpeg.input(video_path)
@@ -76,7 +52,39 @@ def combine_audio_video(
             vcodec=vcodec_out,
             acodec=acodec_out,
             strict="experimental",
-        ).run()
+        ).overwrite_output().run()
     except Exception as e:
         return {"status": Status.ERROR, "error": str(e)}
     return {"status": Status.OK, "info": f"{path}/{title}.{format_out}"}
+
+
+def download_av_from_piped(video_id: str) -> Tuple[str, str, str]:
+    piped_obj = Piped(video_id)
+
+    audio_stream = piped_obj.get_best_audio_stream()
+    video_stream = piped_obj.get_best_video_stream()
+
+    audio_path = piped_obj.download_audio_stream(audio_stream)
+    video_path = piped_obj.download_video_stream(video_stream)
+
+    return audio_path, video_path, piped_obj.title
+
+
+def download_video_from_piped(video_id: str) -> Tuple[str, str]:
+    piped_obj = Piped(video_id)
+
+    video_stream = piped_obj.get_best_video_stream()
+
+    video_path = piped_obj.download_video_stream(video_stream)
+
+    return video_path, piped_obj.title
+
+
+def download_audio_from_piped(video_id: str) -> Tuple[str, str]:
+    piped_obj = Piped(video_id)
+
+    audio_stream = piped_obj.get_best_audio_stream()
+
+    audio_path = piped_obj.download_video_stream(audio_stream)
+
+    return audio_path, piped_obj.title

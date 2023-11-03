@@ -39,11 +39,8 @@ class Settings(BaseSettings):
     celery_retry_max: int = 5
     celery_retry_delay: int = 10
 
-    # Redis token cache settings
-    # Sets default parameters for redis token cache (used for Youtube OAuth)
-    redis_token_cache_host: str = "redis://celery-redis"
-    redis_token_cache_password: str = "pass123"
-    redis_token_cache_db: int = 2
+    # Set piped proxy
+    piped_proxy: str = "https://pipedproxy-yyz"
 
     # Use .env file locally to change any settings above
     class Config:
