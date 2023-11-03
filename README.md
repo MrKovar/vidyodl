@@ -24,6 +24,8 @@ You will need to have [Docker](https://docs.docker.com/get-docker/) installed on
 
 If you are unsure whether or not Docker is properly installed, Docker provides a [test image](https://hub.docker.com/_/hello-world) that you can run to verify that everything is working as expected.
 
+For ease of resources, a ready-made image was created on [Docker Hub](https://hub.docker.com/repository/docker/kovarcodes/bullseye-poetry/general) that has most of the dependencies ready to go.
+
 #### Local
 
 For local usage, you will need to have the following installed:
