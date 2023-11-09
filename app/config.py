@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """
 
     # App settings
-    app_version: str = "0.3.0"
+    app_version: str = "0.3.1"
 
     # Sets default download path for videos. Recommended to be volume mounted to a folder on the host machine.
     download_path: str = "download"
