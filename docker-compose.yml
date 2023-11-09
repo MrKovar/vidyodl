@@ -24,8 +24,6 @@ services:
       - server.main:vidyodl_app
       - --host=0.0.0.0
       - --port=8000
-      # Uncomment this line for quicker development
-      # - --reload
 
   celery-redis:
     container_name: vidyodl-redis

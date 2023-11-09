@@ -2,6 +2,8 @@
 
 Host your own video downloading API! Built in homage to [pytube](https://github.com/pytube/pytube) but with an emphasis on privacy, utilizing Piped! Want to download a video from your favorite site, Piped? How about just the audio? How about an entire YouTube playlist? You came to the right repo! Using celery to create an efficient download queue, you can queue up as many downloads as you want and they will be processed in the order they were received and save them to a directory of your choosing.
 
+Either download your favorite videos directly to your machine, or run a single command on your remote server and have it download your videos for you with your own local API!
+
 ## Getting Started
 
 This is designed to run in a containerized environment. However, it can be run locally as well if you have the correct dependencies installed.
@@ -15,6 +17,8 @@ The API has a few main endpoints that you can use to download videos:
 * `/download_audio` - Download the audio from a video
 
 Once the application has started, you can access the API at `http://localhost:8069/docs` for more information.
+
+There is also a very important endpoint `/set-proxies` that will set the connection string to whichever Piped instance provides the fastest connection. Running this before you begin downloading videos will ensure that you are using the fastest connection possible. You should consider running this endpoint every so often to ensure that you are still using the fastest connection as the status Piped instances can change over time.
 
 ### Prerequisites
 
@@ -42,7 +46,7 @@ Poetry is used to manage the dependencies for this project. To install the depnd
 poetry install
 ```
 
-## Running the tests
+## Running the tests (Coming in 0.4.0)
 
 For simplicity, a Makefile command is provided to run the tests.
 
@@ -104,7 +108,7 @@ Project to use [SemVer](http://semver.org/) for versioning.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License
 
 ## Acknowledgments
 

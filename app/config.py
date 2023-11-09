@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     For sensitive information, use environment variables in .env file.
     """
 
+    # App settings
+    app_version: str = "0.3.0"
+
     # Sets default download path for videos. Recommended to be volume mounted to a folder on the host machine.
     download_path: str = "download"
 
@@ -39,9 +42,27 @@ class Settings(BaseSettings):
     celery_retry_max: int = 5
     celery_retry_delay: int = 10
 
+    default_proxy: str = "https://pipedapi.kavin.rocks"
+
     # Set piped proxy
     piped_proxy: str = "https://pipedproxy-yyz"
 
     # Use .env file locally to change any settings above
     class Config:
         env_file = ".env"
+
+
+class TestSettings(BaseSettings):
+    """
+    Settings and configuration for testing the application.
+
+    Defaults set here, but can be overridden by environment variables in .env file.
+    """
+
+    test_download_path: str = "download"
+
+    invalid_video_id: str = "invalid_video_id"
+    valid_video_id: str = "valid_video_id"
+
+    class Config:
+        env_file = ".env.test"

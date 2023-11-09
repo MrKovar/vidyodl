@@ -1,0 +1,104 @@
+{
+  "proxy_list": [
+    {
+      "name": "kavin.rocks (Official)",
+      "url": "https://pipedapi.kavin.rocks"
+    },
+    { "name": "tokhmi.xyz", "url": "https://pipedapi.tokhmi.xyz" },
+    { "name": "moomoo.me", "url": "https://pipedapi.moomoo.me" },
+    {
+      "name": "syncpundit.io",
+      "url": "https://pipedapi.syncpundit.io"
+    },
+    { "name": "mha.fi", "url": "https://api-piped.mha.fi" },
+    {
+      "name": "garudalinux.org",
+      "url": "https://piped-api.garudalinux.org"
+    },
+    { "name": "rivo.lol", "url": "https://pipedapi.rivo.lol" },
+    {
+      "name": "leptons.xyz",
+      "url": "https://pipedapi.leptons.xyz"
+    },
+    { "name": "lunar.icu", "url": "https://piped-api.lunar.icu" },
+    { "name": "dc09.ru", "url": "https://ytapi.dc09.ru" },
+    {
+      "name": "colinslegacy.com",
+      "url": "https://pipedapi.colinslegacy.com"
+    },
+    { "name": "vyper.me", "url": "https://yapi.vyper.me" },
+    { "name": "looleh.xyz", "url": "https://api.looleh.xyz" },
+    { "name": "cfe.re", "url": "https://piped-api.cfe.re" },
+    { "name": "r4fo.com", "url": "https://pipedapi.r4fo.com" },
+    { "name": "game.yt", "url": "https://piped-api.game.yt" },
+    {
+      "name": "kavin.rocks libre (Official)",
+      "url": "https://pipedapi-libre.kavin.rocks"
+    },
+    { "name": "mint.lgbt", "url": "https://pa.mint.lgbt" },
+    { "name": "il.ax", "url": "https://pa.il.ax" },
+    {
+      "name": "privacy.com.de",
+      "url": "https://piped-api.privacy.com.de"
+    },
+    {
+      "name": "projectsegfau.lt",
+      "url": "https://api.piped.projectsegfau.lt"
+    },
+    {
+      "name": "projectsegfau.lt in",
+      "url": "https://pipedapi.in.projectsegfau.lt"
+    },
+    {
+      "name": "projectsegfau.lt us",
+      "url": "https://pipedapi.us.projectsegfau.lt"
+    },
+    {
+      "name": "whatever.social",
+      "url": "https://watchapi.whatever.social"
+    },
+    {
+      "name": "privacydev.net",
+      "url": "https://api.piped.privacydev.net"
+    },
+    {
+      "name": "palveluntarjoaja.eu",
+      "url": "https://pipedapi.palveluntarjoaja.eu"
+    },
+    { "name": "smnz.de", "url": "https://pipedapi.smnz.de" },
+    {
+      "name": "adminforge.de",
+      "url": "https://pipedapi.adminforge.de"
+    },
+    { "name": "qdi.fi", "url": "https://pipedapi.qdi.fi" },
+    { "name": "hostux.net", "url": "https://piped-api.hostux.net" },
+    { "name": "vern.cc", "url": "https://pdapi.vern.cc" },
+    { "name": "pfcd.me", "url": "https://pipedapi.pfcd.me" },
+    {
+      "name": "frontendfriendly.xyz",
+      "url": "https://pipedapi.frontendfriendly.xyz"
+    },
+    { "name": "piped.yt", "url": "https://api.piped.yt" },
+    {
+      "name": "astartes.nl",
+      "url": "https://pipedapi.astartes.nl"
+    },
+    { "name": "osphost.fi", "url": "https://pipedapi.osphost.fi" },
+    {
+      "name": "simpleprivacy.fr",
+      "url": "https://pipedapi.simpleprivacy.fr"
+    },
+    {
+      "name": "drgns.space",
+      "url": "https://pipedapi.drgns.space"
+    },
+    { "name": "ggtyler.dev", "url": "https://piapi.ggtyler.dev" },
+    { "name": "pluto.lat", "url": "https://api.watch.pluto.lat" },
+    {
+      "name": "seitan-ayoub.lol",
+      "url": "https://piped-backend.seitan-ayoub.lol"
+    },
+    { "name": "owo.si", "url": "https://pipedapi.owo.si" },
+    { "name": "12a.app", "url": "https://pipedapi.12a.app" }
+  ]
+}

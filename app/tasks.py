@@ -7,13 +7,30 @@ from app.download_utils import (
     download_piped_video,
 )
 from app.helper_classes import Status
+from app.proxy_functions import update_fastest_proxy
 
 settings = config.Settings()
 
 redis_version = "redis" if settings.redis_tls == 0 else "rediss"
 
-celery_broker = f"{redis_version}://{settings.celery_broker_user}{':' if settings.celery_broker_password != '' else ''}{settings.celery_broker_password}{'@' if settings.celery_broker_password != '' else ''}{settings.celery_broker_host}:{settings.celery_broker_port}/{settings.celery_broker_db}"
-celery_backend = f"{redis_version}://{settings.celery_backend_user}{':' if settings.celery_backend_password != '' else ''}{settings.celery_backend_password}{'@' if settings.celery_backend_password != '' else ''}{settings.celery_backend_host}:{settings.celery_backend_port}/{settings.celery_backend_db}"
+celery_broker = (
+    f"{redis_version}://"
+    + f"{settings.celery_broker_user}"
+    + f"{':' if settings.celery_broker_password != '' else ''}"
+    + f"{settings.celery_broker_password}"
+    + f"{'@' if settings.celery_broker_password != '' else ''}"
+    + f"{settings.celery_broker_host}:{settings.celery_broker_port}"
+    + f"/{settings.celery_broker_db}"
+)
+celery_backend = (
+    f"{redis_version}://"
+    + f"{settings.celery_backend_user}"
+    + f"{':' if settings.celery_backend_password != '' else ''}"
+    + f"{settings.celery_backend_password}"
+    + f"{'@' if settings.celery_backend_password != '' else ''}"
+    + f"{settings.celery_backend_host}:{settings.celery_backend_port}"
+    + f"/{settings.celery_backend_db}"
+)
 
 celery_app = celery.Celery(
     "celery-vidyodl",
@@ -62,11 +79,14 @@ def download_piped_video_task(self, payload: dict):
     default_retry_delay=settings.celery_retry_delay,
     retries=settings.celery_retry_max,
 )
-async def download_piped_audio_task(self, payload: dict):
+def download_piped_audio_task(self, payload: dict) -> dict:
     try:
-        audio_path, title = download_audio_from_piped(payload["video_id"])
+        video_id = payload["video_id"]
+        download_response = download_audio_from_piped(video_id)
     except Exception as e:
-        if self.request.retries == settings.celery_retry_max:
-            raise self.retry(exc=SubtaskException(str(e)))
+        if str(e) == "Expecting value: line 1 column 1 (char 0)":
+            print("The proxy may be down. Setting a new proxy...")
+            update_fastest_proxy()
+        raise self.retry(exc=SubtaskException(str(e)))
 
-    return {"status": Status.OK}
+    return {"status": Status.OK, "info": download_response["audio_path"]}

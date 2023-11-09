@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import ffmpeg
 from pytube import Playlist
 
@@ -20,14 +18,18 @@ def get_youtube_video_list_from_playlist(playlist_id: str) -> list:
 
 def download_piped_video(video_id: str) -> dict:
     try:
-        audio_path, video_path, title = download_av_from_piped(video_id)
-        return {"status": Status.OK, "audio_path": audio_path, "video_path": video_path, "title": title}
+        download_response = download_av_from_piped(video_id)
+        return {
+            "status": Status.OK,
+            "audio_path": download_response["audio_path"],
+            "video_path": download_response["video_path"],
+            "title": download_response["title"],
+        }
     except Exception as e:
-        print(f"Exception happned while retrying with Piped: {e}")
         return {"status": Status.ERROR, "error": str(e)}
 
 
-def download_youtube_playlist(playlist_id, path) -> None:
+def download_youtube_playlist(playlist_id: str, path: str) -> None:
     playlist = Playlist(f"https://www.youtube.com/playlist?list={playlist_id}")
 
     for video in playlist.videos:
@@ -40,7 +42,14 @@ def download_youtube_playlist(playlist_id, path) -> None:
         combine_audio_video(audio_path, video_path, video_title, path)
 
 
-def combine_audio_video(audio_path, video_path, title, format_out="mp4", vcodec_out="copy", acodec_out="copy") -> dict:
+def combine_audio_video(
+    audio_path: str,
+    video_path: str,
+    title: str,
+    format_out: str = "mp4",
+    vcodec_out: str = "copy",
+    acodec_out: str = "copy",
+) -> dict:
     try:
         audio_input = ffmpeg.input(audio_path)
         video_input = ffmpeg.input(video_path)
@@ -58,7 +67,7 @@ def combine_audio_video(audio_path, video_path, title, format_out="mp4", vcodec_
     return {"status": Status.OK, "info": f"{path}/{title}.{format_out}"}
 
 
-def download_av_from_piped(video_id: str) -> Tuple[str, str, str]:
+def download_av_from_piped(video_id: str) -> dict:
     piped_obj = Piped(video_id)
 
     audio_stream = piped_obj.get_best_audio_stream()
@@ -67,24 +76,24 @@ def download_av_from_piped(video_id: str) -> Tuple[str, str, str]:
     audio_path = piped_obj.download_audio_stream(audio_stream)
     video_path = piped_obj.download_video_stream(video_stream)
 
-    return audio_path, video_path, piped_obj.title
+    return {"audio_path": audio_path, "video_path": video_path, "title": piped_obj.title}
 
 
-def download_video_from_piped(video_id: str) -> Tuple[str, str]:
+def download_video_from_piped(video_id: str) -> dict:
     piped_obj = Piped(video_id)
 
     video_stream = piped_obj.get_best_video_stream()
 
     video_path = piped_obj.download_video_stream(video_stream)
 
-    return video_path, piped_obj.title
+    return {"video_path": video_path, "title": piped_obj.title}
 
 
-def download_audio_from_piped(video_id: str) -> Tuple[str, str]:
+def download_audio_from_piped(video_id: str) -> dict:
     piped_obj = Piped(video_id)
 
     audio_stream = piped_obj.get_best_audio_stream()
 
-    audio_path = piped_obj.download_video_stream(audio_stream)
+    audio_path = piped_obj.download_audio_stream(audio_stream)
 
-    return audio_path, piped_obj.title
+    return {"audio_path": audio_path, "title": piped_obj.title}

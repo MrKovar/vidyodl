@@ -6,7 +6,7 @@ settings = Settings()
 
 
 class Stream:
-    def __init__(self, stream_data):
+    def __init__(self, stream_data: dict):
         self.stream_data = stream_data
         self.url = stream_data["url"]
         self.format = stream_data["format"]
